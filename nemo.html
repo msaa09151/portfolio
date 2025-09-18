@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10x10 네모네모 로직</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        #game-board {
+            border-collapse: collapse;
+        }
+
+        #game-board td {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #555;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        
+        /* 5x5 구분선 */
+        #game-board td:nth-child(5n) {
+            border-right: 2px solid #ffffff;
+        }
+        #game-board tr:nth-child(5n) td {
+            border-bottom: 2px solid #ffffff;
+        }
+        
+        .top-hints tr:last-child td {
+             border-bottom: 2px solid #ffffff;
+        }
+        
+        .left-hints td:last-child {
+            border-right: 2px solid #ffffff;
+        }
+
+        .grid-cell {
+            cursor: pointer;
+            background-color: #333;
+            transition: background-color 0.1s ease;
+        }
+
+        .grid-cell.filled {
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        .grid-cell.marked::after {
+            content: '×';
+            color: #999;
+            font-size: 24px;
+            line-height: 35px;
+        }
+        
+        .hint-cell {
+            background-color: #1a1a1a;
+            padding: 5px;
+            min-width: 50px;
+            min-height: 50px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .button {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #ccc;
+        }
+        
+        #message {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #ffffff;
+            min-height: 25px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>네모네모 로직</h1>
+        <table id="game-board"></table>
+        <div class="controls">
+            <button id="check-btn" class="button">정답 확인</button>
+            <button id="reset-btn" class="button">다시 시작</button>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gridSize = 10;
+            // 다이아몬드 모양의 정답
+            const solution = [
+                [0,0,0,0,1,1,0,0,0,0],
+                [0,0,0,1,1,1,1,0,0,0],
+                [0,0,1,1,1,1,1,1,0,0],
+                [0,1,1,1,1,1,1,1,1,0],
+                [1,1,1,1,1,1,1,1,1,1],
+                [1,1,1,1,1,1,1,1,1,1],
+                [0,1,1,1,1,1,1,1,1,0],
+                [0,0,1,1,1,1,1,1,0,0],
+                [0,0,0,1,1,1,1,0,0,0],
+                [0,0,0,0,1,1,0,0,0,0]
+            ];
+
+            const gameBoard = document.getElementById('game-board');
+            const messageEl = document.getElementById('message');
+
+            function getHints(line) {
+                const hints = [];
+                let count = 0;
+                for (const cell of line) {
+                    if (cell === 1) {
+                        count++;
+                    } else if (count > 0) {
+                        hints.push(count);
+                        count = 0;
+                    }
+                }
+                if (count > 0) {
+                    hints.push(count);
+                }
+                return hints.length > 0 ? hints : [0];
+            }
+
+            const rowHints = solution.map(row => getHints(row));
+            const colHints = Array.from({ length: gridSize }, (_, i) => {
+                const col = solution.map(row => row[i]);
+                return getHints(col);
+            });
+            
+            function createBoard() {
+                gameBoard.innerHTML = '';
+                messageEl.textContent = '';
+                
+                const maxColHintLength = Math.max(...colHints.map(h => h.length));
+
+                // 상단 힌트 (열)
+                const topHintsBody = document.createElement('tbody');
+                topHintsBody.className = 'top-hints';
+                for (let i = 0; i < maxColHintLength; i++) {
+                    const tr = document.createElement('tr');
+                    // 좌측 상단 빈 칸
+                    if (i === 0) {
+                        const cornerTd = document.createElement('td');
+                        cornerTd.rowSpan = maxColHintLength;
+                        cornerTd.style.border = 'none';
+                        cornerTd.style.background = '#000';
+                        tr.appendChild(cornerTd);
+                    }
+                    // 힌트 숫자
+                    for (let j = 0; j < gridSize; j++) {
+                        const td = document.createElement('td');
+                        td.className = 'hint-cell';
+                        const hintIndex = i - (maxColHintLength - colHints[j].length);
+                        if (hintIndex >= 0) {
+                            td.textContent = colHints[j][hintIndex];
+                        }
+                        tr.appendChild(td);
+                    }
+                    topHintsBody.appendChild(tr);
+                }
+                gameBoard.appendChild(topHintsBody);
+
+                // 왼쪽 힌트 (행) 와 플레이 그리드
+                const mainBody = document.createElement('tbody');
+                mainBody.className = 'left-hints';
+                for (let i = 0; i < gridSize; i++) {
+                    const tr = document.createElement('tr');
+                    
+                    const hintTd = document.createElement('td');
+                    hintTd.className = 'hint-cell';
+                    hintTd.textContent = rowHints[i].join(' ');
+                    tr.appendChild(hintTd);
+                    
+                    for (let j = 0; j < gridSize; j++) {
+                        const cell = document.createElement('td');
+                        cell.className = 'grid-cell';
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        tr.appendChild(cell);
+                    }
+                    mainBody.appendChild(tr);
+                }
+                gameBoard.appendChild(mainBody);
+                addCellListeners();
+            }
+
+            function handleCellClick(e) {
+                const cell = e.target;
+                if (!cell.classList.contains('grid-cell')) return;
+
+                if (e.button === 0) { // 좌클릭
+                    cell.classList.remove('marked');
+                    cell.classList.toggle('filled');
+                }
+            }
+            
+            function handleCellRightClick(e) {
+                e.preventDefault();
+                const cell = e.target;
+                if (!cell.classList.contains('grid-cell')) return;
+
+                if (cell.classList.contains('filled')) {
+                    cell.classList.remove('filled');
+                }
+                cell.classList.toggle('marked');
+            }
+
+            function addCellListeners() {
+                gameBoard.addEventListener('click', handleCellClick);
+                gameBoard.addEventListener('contextmenu', handleCellRightClick);
+            }
+            
+            function checkSolution() {
+                let isCorrect = true;
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const cell = gameBoard.querySelector(`[data-row='${i}'][data-col='${j}']`);
+                        const cellIsFilled = cell.classList.contains('filled');
+                        const solutionIsFilled = solution[i][j] === 1;
+
+                        if (cellIsFilled !== solutionIsFilled) {
+                            isCorrect = false;
+                            break;
+                        }
+                    }
+                    if (!isCorrect) break;
+                }
+
+                if (isCorrect) {
+                    messageEl.textContent = '축하합니다! 정답입니다!';
+                    messageEl.style.color = '#2ecc71';
+                } else {
+                    messageEl.textContent = '아쉽네요. 다시 확인해 보세요.';
+                    messageEl.style.color = '#e74c3c';
+                }
+            }
+
+            document.getElementById('check-btn').addEventListener('click', checkSolution);
+            document.getElementById('reset-btn').addEventListener('click', createBoard);
+
+            createBoard();
+        });
+    </script>
+</body>
+</html>
