@@ -16,25 +16,8 @@
     overflow: hidden;
   }
   h1 {
-    font-size: 20px;
+    font-size: 40px; /* 기존보다 2배 크게 */
     margin: 10px 0;
-  }
-  .toolbar {
-    margin: 5px;
-  }
-  button {
-    background: white;
-    color: black;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 16px;
-    margin: 0 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  button:hover {
-    background: #ddd;
   }
   .board-wrapper {
     flex: 1;
@@ -65,11 +48,11 @@
   .hint {
     background: black;
     color: white;
-    border: none;
-    cursor: default;
+    border: 1px solid white; /* 힌트도 칸으로 */
     font-size: 1vw;
+    cursor: default;
   }
-  /* 바깥 테두리 굵게 */
+  /* 보드 외곽 테두리 */
   .board td {
     border: 1px solid white;
   }
@@ -85,16 +68,36 @@
   .board td:last-child {
     border-right: 3px solid white;
   }
+  /* 하단 버튼 */
+  .toolbar {
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+  }
+  button {
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 18px;
+    margin: 0 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #ddd;
+  }
 </style>
 </head>
 <body>
   <h1>네모네모 로직 (10×10)</h1>
+  <div class="board-wrapper">
+    <table id="board" class="board"></table>
+  </div>
   <div class="toolbar">
     <button onclick="checkAnswer()">정답 확인</button>
     <button onclick="newGame()">새 게임</button>
-  </div>
-  <div class="board-wrapper">
-    <table id="board"></table>
   </div>
 
 <script>
@@ -134,8 +137,7 @@ let board = [];
 // 힌트 계산
 function computeHints(puzzle) {
   const rowHints = puzzle.map(row => {
-    let hints = [];
-    let count = 0;
+    let hints = [], count = 0;
     row.forEach(cell => {
       if (cell === 1) count++;
       else if (count > 0) { hints.push(count); count = 0; }
@@ -146,8 +148,7 @@ function computeHints(puzzle) {
 
   const colHints = [];
   for (let c = 0; c < size; c++) {
-    let hints = [];
-    let count = 0;
+    let hints = [], count = 0;
     for (let r = 0; r < size; r++) {
       if (puzzle[r][c] === 1) count++;
       else if (count > 0) { hints.push(count); count = 0; }
@@ -165,11 +166,10 @@ function buildBoard() {
   const table = document.getElementById("board");
   table.innerHTML = "";
 
-  // 최대 힌트 길이
   const maxRowHint = Math.max(...rowHints.map(h => h.length));
   const maxColHint = Math.max(...colHints.map(h => h.length));
 
-  // 헤더 행들 (열 힌트)
+  // 열 힌트
   for (let i = 0; i < maxColHint; i++) {
     const tr = document.createElement("tr");
     for (let j = 0; j < maxRowHint; j++) {
@@ -188,10 +188,9 @@ function buildBoard() {
     table.appendChild(tr);
   }
 
-  // 본게임 행들
+  // 행 + 셀
   for (let r = 0; r < size; r++) {
     const tr = document.createElement("tr");
-    // 행 힌트
     for (let j = 0; j < maxRowHint; j++) {
       const td = document.createElement("td");
       td.classList.add("hint");
@@ -200,7 +199,6 @@ function buildBoard() {
       td.textContent = value || "";
       tr.appendChild(td);
     }
-    // 셀
     board[r] = [];
     for (let c = 0; c < size; c++) {
       const td = document.createElement("td");
