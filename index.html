@@ -3,36 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI & 임베디드 개발자 고아름 포트폴리오</title>
+    <title>AI & Embedded 개발자 고아름 포트폴리오</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --background-color: #ecf0f1;
-            --text-color: #34495e;
-            --card-bg-color: #ffffff;
+            --bg-color: #111118; /* Black */
+            --primary-purple: #8e44ad; /* Purple */
+            --secondary-purple: #9b59b6; /* Lighter Purple */
+            --card-bg-color: #1e1e28; /* Dark Card Background */
+            --text-color: #ecf0f1; /* Light Gray Text */
             --header-height: 70px;
         }
 
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding-top: var(--header-height);
-            background-color: var(--background-color);
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-color);
-            line-height: 1.6;
+            line-height: 1.7;
+            scroll-behavior: smooth;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             padding: 20px;
         }
 
+        /* Header & Navigation */
         header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0 20px;
+            background-color: rgba(17, 17, 24, 0.85);
+            backdrop-filter: blur(10px);
             position: fixed;
             top: 0;
             left: 0;
@@ -41,153 +49,232 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 0 40px;
+            border-bottom: 1px solid var(--card-bg-color);
             z-index: 1000;
         }
 
-        header h1 {
-            margin: 0;
+        header .logo {
+            font-weight: 900;
             font-size: 1.8em;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        header .logo span {
+            color: var(--primary-purple);
         }
 
         header nav a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
-            margin-left: 20px;
+            margin-left: 25px;
             font-size: 1.1em;
-            transition: color 0.3s;
+            transition: color 0.3s ease;
         }
 
         header nav a:hover {
-            color: var(--secondary-color);
+            color: var(--primary-purple);
+        }
+
+        /* Main Sections */
+        main {
+            padding-top: var(--header-height);
         }
 
         section {
-            padding: 60px 0;
-            border-bottom: 1px solid #bdc3c7;
+            padding: 80px 0;
         }
         
-        section:last-of-type {
-            border-bottom: none;
-        }
-
-        h2 {
+        .section-title {
             text-align: center;
-            margin-bottom: 40px;
-            font-size: 2.5em;
-            color: var(--primary-color);
+            margin-bottom: 50px;
+            font-size: 2.8em;
+            font-weight: 900;
+            color: var(--text-color);
         }
 
+        .section-title span {
+            color: var(--primary-purple);
+        }
+
+        /* Hero Section */
         #hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            padding: 80px 20px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            min-height: calc(100vh - var(--header-height));
+            padding: 0 20px;
+            background: radial-gradient(circle, var(--card-bg-color) 0%, var(--bg-color) 70%);
+        }
+
+        #hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
         }
         
-        #hero h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
+        #hero h1 .highlight {
+            color: var(--primary-purple);
         }
 
         #hero p {
-            font-size: 1.3em;
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 1.4rem;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            color: #bdc3c7;
+        }
+        
+        .hero-button {
+            display: inline-block;
+            background: var(--primary-purple);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .profile {
+        .hero-button:hover {
+            background-color: var(--secondary-purple);
+            transform: translateY(-3px);
+        }
+        
+        /* About Section */
+        #about .about-content {
             display: flex;
             align-items: center;
-            gap: 40px;
+            gap: 50px;
         }
         
-        .profile-img {
-            width: 200px;
-            height: 200px;
+        .profile-icon-area {
+            width: 250px;
+            height: 250px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid var(--secondary-color);
+            border: 5px solid var(--primary-purple);
+            box-shadow: 0 0 25px rgba(142, 68, 173, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--card-bg-color);
+            flex-shrink: 0;
         }
 
+        .profile-icon-area svg {
+            width: 120px;
+            height: 120px;
+        }
+        
+        #about .about-text p {
+            margin-bottom: 15px;
+        }
+
+        /* Skills Section */
         .skills-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 20px;
-            text-align: center;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
         }
-
-        .skill-item {
+        
+        .skill-category {
             background-color: var(--card-bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .skill-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 5px solid var(--primary-purple);
         }
 
-        .skill-item i {
-            font-size: 2.5em; /* Placeholder for icons */
-            color: var(--secondary-color);
-        }
-        
-        .skill-item p {
-            margin: 10px 0 0;
-            font-weight: bold;
+        .skill-category h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary-purple);
         }
 
+        .skill-category ul {
+            list-style: none;
+        }
+        
+        .skill-category li {
+            background: var(--bg-color);
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: transform 0.2s ease;
+        }
+        
+        .skill-category li:hover {
+            transform: translateX(5px);
+        }
+        
+        /* Projects Section */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
         }
 
         .project-card {
             background-color: var(--card-bg-color);
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #2c2c3a;
             display: flex;
             flex-direction: column;
         }
         
         .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .project-card img {
+        .project-placeholder {
             width: 100%;
             height: 200px;
-            object-fit: cover;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #2c2c3a;
+        }
+
+        .project-placeholder svg {
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .project-placeholder h3 {
+            color: var(--secondary-purple);
+            font-size: 1.4rem;
+            margin: 0;
         }
 
         .project-content {
-            padding: 20px;
+            padding: 25px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
         
         .project-content h3 {
-            margin-top: 0;
-            color: var(--secondary-color);
+            color: var(--secondary-purple);
+            margin-bottom: 10px;
         }
         
-        .tags {
+        .project-content .tags {
             margin-bottom: 15px;
         }
 
-        .tag {
-            background-color: var(--background-color);
-            color: var(--text-color);
+        .project-content .tag {
+            background-color: var(--bg-color);
+            color: var(--secondary-purple);
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 15px;
             font-size: 0.8em;
             margin-right: 5px;
             display: inline-block;
@@ -196,67 +283,77 @@
         .project-links {
             margin-top: auto;
         }
-        
+
         .project-links a {
             text-decoration: none;
-            color: var(--secondary-color);
+            color: var(--primary-purple);
             font-weight: bold;
+            margin-top: 15px;
             margin-right: 15px;
+            display: inline-block;
         }
         
         .project-links a:hover {
             text-decoration: underline;
         }
 
+        /* Contact Section */
         #contact p {
             text-align: center;
-            font-size: 1.2em;
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 30px auto;
         }
         
         .contact-links {
             text-align: center;
-            margin-top: 20px;
         }
         
         .contact-links a {
             text-decoration: none;
-            color: var(--primary-color);
-            font-size: 1.1em;
-            margin: 0 15px;
-            transition: color 0.3s;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            margin: 0 20px;
+            padding: 10px 20px;
+            border: 2px solid var(--primary-purple);
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
         
         .contact-links a:hover {
-            color: var(--secondary-color);
+            background-color: var(--primary-purple);
+            color: white;
+            box-shadow: 0 0 15px rgba(142, 68, 173, 0.7);
         }
 
+        /* Footer */
         footer {
             text-align: center;
-            padding: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            font-size: 0.9em;
+            padding: 30px;
+            margin-top: 50px;
+            border-top: 1px solid var(--card-bg-color);
+            color: #7f8c8d;
         }
-        
+
+        /* Responsive Design */
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.5em;
+            header {
+                padding: 0 20px;
             }
-            header nav a {
-                margin-left: 10px;
-                font-size: 1em;
-            }
-            .profile {
-                flex-direction: column;
-                text-align: center;
-            }
+            header .logo { font-size: 1.5em; }
+            header nav { display: none; /* 모바일에서는 메뉴 버튼으로 대체하는 것을 추천 */ }
+            #hero h1 { font-size: 2.5rem; }
+            #hero p { font-size: 1.2rem; }
+            #about .about-content { flex-direction: column; text-align: center; }
+            .section-title { font-size: 2.2em; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Header -->
     <header>
-        <h1>고아름's Portfolio</h1>
+        <a href="#" class="logo">PORTFOLIO<span>.</span></a>
         <nav>
             <a href="#about">About</a>
             <a href="#skills">Skills</a>
@@ -266,97 +363,125 @@
     </header>
 
     <main>
+        <!-- Hero Section -->
         <section id="hero">
-            <h1>안녕하세요, AI & 임베디드 개발자 고아름입니다.</h1>
-            <p>데이터와 하드웨어를 넘나들며 혁신적인 솔루션을 만듭니다.</p>
+            <div>
+                <h1>AI and Embedded Developer <span class="highlight">고아름</span></h1>
+                <p>AI 모델로 하드웨어에 생명을 불어넣는 개발자입니다.</p>
+                <a href="#projects" class="hero-button">프로젝트 보기</a>
+            </div>
         </section>
 
         <div class="container">
+            <!-- About Section -->
             <section id="about">
-                <h2>ABOUT ME</h2>
-                <div class="profile">
-                    <img src="https://via.placeholder.com/200" alt="프로필 사진" class="profile-img">
-                    <div>
-                        <h3>끊임없이 배우고 성장하는 개발자</h3>
+                <h2 class="section-title"><span>A</span>BOUT ME</h2>
+                <div class="about-content">
+                    <div class="profile-icon-area">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 9H15M12 9V15M12 12H9M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="var(--primary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 3H16C18.7614 3 21 5.23858 21 8V9" stroke="var(--primary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M9 21H8C5.23858 21 3 18.7614 3 16V15" stroke="var(--primary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3 9H4C6.76142 9 9 6.76142 9 4V3" stroke="var(--primary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M19 15H21V16C21 18.7614 18.7614 21 16 21H15" stroke="var(--primary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="about-text">
+                        <h3>소프트웨어와 하드웨어의 경계를 넘나드는 개발자</h3>
                         <p>
-                            저는 인공지능 모델을 경량화하여 저전력 임베디드 시스템에 탑재하는ことに 깊은 흥미를 느끼고 있습니다. TensorFlow Lite, PyTorch Mobile과 같은 기술을 활용하여 엣지 디바이스에서 효율적으로 동작하는 AI 솔루션을 개발한 경험이 있습니다.
+                            저는 강력한 AI 알고리즘을 설계하고, 이를 경량화하여 한정된 자원의 임베디드 시스템에 탑재하는 일에 열정을 가지고 있습니다. 엣지 컴퓨팅 환경에서 실시간 데이터 처리가 가능한 최적의 솔루션을 찾는 것을 즐깁니다.
                         </p>
                         <p>
-                            다양한 센서 데이터를 처리하고, 실시간 운영체제(RTOS) 환경에서 안정적인 펌웨어를 설계하는 역량을 갖추고 있습니다. 문제 해결 과정을 즐기며, 복잡한 기술적 과제를 해결하며 큰 성취감을 느낍니다.
+                            TensorFlow, PyTorch와 같은 딥러닝 프레임워크부터 C/C++, RTOS 기반의 펌웨어 개발까지 폭넓은 기술 스택을 보유하고 있습니다. 복잡한 문제를 분석하고, 효율적인 코드로 해결책을 만들어내는 과정에서 큰 보람을 느낍니다.
                         </p>
                     </div>
                 </div>
             </section>
 
+            <!-- Skills Section -->
             <section id="skills">
-                <h2>SKILLS</h2>
+                <h2 class="section-title"><span>S</span>KILLS</h2>
                 <div class="skills-grid">
-                    <div class="skill-item"><p>Python</p></div>
-                    <div class="skill-item"><p>TensorFlow</p></div>
-                    <div class="skill-item"><p>PyTorch</p></div>
-                    <div class="skill-item"><p>Scikit-learn</p></div>
-                    <div class="skill-item"><p>OpenCV</p></div>
-                    <div class="skill-item"><p>C/C++</p></div>
-                    <div class="skill-item"><p>MCU (STM32, ESP32)</p></div>
-                    <div class="skill-item"><p>RTOS</p></div>
-                    <div class="skill-item"><p>Linux Kernel</p></div>
-                    <div class="skill-item"><p>Yocto Project</p></div>
-                    <div class="skill-item"><p>Git</p></div>
-                    <div class="skill-item"><p>Docker</p></div>
+                    <div class="skill-category">
+                        <h3>AI & Machine Learning</h3>
+                        <ul>
+                            <li>Python, TensorFlow, PyTorch</li>
+                            <li>Computer Vision (OpenCV)</li>
+                            <li>Model Optimization & Quantization</li>
+                            <li>Data Analysis (Pandas, NumPy)</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Embedded Systems</h3>
+                        <ul>
+                            <li>C / C++</li>
+                            <li>MCU (STM32, ESP32, Raspberry Pi)</li>
+                            <li>RTOS (FreeRTOS) & Embedded Linux</li>
+                            <li>Communication Protocols (I2C, SPI, UART)</li>
+                        </ul>
+                    </div>
                 </div>
             </section>
 
+            <!-- Projects Section -->
             <section id="projects">
-                <h2>PROJECTS</h2>
+                <h2 class="section-title"><span>P</span>ROJECTS</h2>
                 <div class="projects-grid">
+                    <!-- Project 1 -->
                     <div class="project-card">
-                        <img src="https://via.placeholder.com/400x250/3498db/ffffff?text=Project+1" alt="프로젝트 1 이미지">
+                        <div class="project-placeholder">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V6M12 18V20M4 12H6M18 12H20M7.05 7.05L8.46 8.46M15.54 15.54L16.95 16.95M7.05 16.95L8.46 15.54M15.54 8.46L16.95 7.05" stroke="var(--secondary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="var(--secondary-purple)" stroke-width="2"/></svg>
+                            <h3>실시간 객체 탐지</h3>
+                        </div>
                         <div class="project-content">
-                            <h3>엣지 디바이스 기반 실시간 객체 탐지 시스템</h3>
+                            <p>저전력 MCU에서 YOLOv5 모델을 최적화하여 실시간 객체 탐지 시스템을 개발. 모델 양자화 및 하드웨어 가속으로 추론 속도 30% 향상.</p>
                             <div class="tags">
-                                <span class="tag">AI</span><span class="tag">Embedded</span><span class="tag">C++</span><span class="tag">TensorFlow Lite</span>
+                                <span class="tag">AI</span><span class="tag">Embedded</span><span class="tag">TFLite</span>
                             </div>
-                            <p>저전력 MCU 보드에서 YOLOv5 모델을 최적화하여 실시간으로 객체를 탐지하는 시스템을 개발했습니다. 모델 양자화 및 하드웨어 가속을 통해 추론 속도를 30% 향상시켰습니다.</p>
                             <div class="project-links">
-                                <a href="#" target="_blank">GitHub</a>
-                                <a href="#" target="_blank">상세 보기</a>
+                                <a href="#" target="_blank">GitHub &rarr;</a>
                             </div>
                         </div>
                     </div>
+                    <!-- Project 2 -->
                     <div class="project-card">
-                        <img src="https://via.placeholder.com/400x250/2ecc71/ffffff?text=Project+2" alt="프로젝트 2 이미지">
+                        <div class="project-placeholder">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="var(--secondary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 22V12H15V22" stroke="var(--secondary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <h3>스마트 홈 펌웨어</h3>
+                        </div>
                         <div class="project-content">
-                            <h3>음성 인식을 통한 스마트 홈 제어 펌웨어</h3>
-                             <div class="tags">
-                                <span class="tag">Embedded</span><span class="tag">AI</span><span class="tag">RTOS</span><span class="tag">C</span>
+                            <p>FreeRTOS 기반 시스템에 경량 음성 인식 모델을 탑재하여 가전제품을 제어하는 펌웨어 개발. 저전력 설계로 배터리 사용 시간 50% 증대.</p>
+                            <div class="tags">
+                                <span class="tag">Embedded</span><span class="tag">AI</span><span class="tag">RTOS</span>
                             </div>
-                            <p>FreeRTOS 기반의 임베디드 시스템에 경량 음성 인식 모델을 탑재하여 조명, 가전제품 등을 제어하는 펌웨어를 개발했습니다. 저전력 설계를 통해 배터리 사용 시간을 50% 늘렸습니다.</p>
                             <div class="project-links">
-                                <a href="#" target="_blank">GitHub</a>
-                                <a href="#" target="_blank">데모 영상</a>
+                                <a href="#" target="_blank">GitHub &rarr;</a>
                             </div>
                         </div>
                     </div>
+                    <!-- Project 3 -->
                     <div class="project-card">
-                        <img src="https://via.placeholder.com/400x250/e74c3c/ffffff?text=Project+3" alt="프로젝트 3 이미지">
+                        <div class="project-placeholder">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3V19C3 19.5304 3.21071 20.0391 3.58579 20.4142C3.96086 20.7893 4.46957 21 5 21H21" stroke="var(--secondary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 14L12 9L15 12L19 8" stroke="var(--secondary-purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <h3>이상 탐지 AI 모델</h3>
+                        </div>
                         <div class="project-content">
-                            <h3>센서 데이터 이상 탐지 AI 모델 개발</h3>
-                             <div class="tags">
-                                <span class="tag">AI</span><span class="tag">Python</span><span class="tag">Scikit-learn</span>
+                            <p>공장 설비의 센서 데이터를 분석하여 이상 상태를 조기에 감지하는 LSTM 기반 모델 개발. 실제 데이터에서 95% 이상의 정확도 달성.</p>
+                            <div class="tags">
+                                <span class="tag">AI</span><span class="tag">Python</span><span class="tag">LSTM</span>
                             </div>
-                            <p>공장 설비의 진동 및 온도 센서 데이터를 분석하여 이상 상태를 조기에 감지하는 LSTM 기반의 이상 탐지 모델을 개발하고, 실제 데이터에서 95% 이상의 정확도를 달성했습니다.</p>
-                           <div class="project-links">
-                                <a href="#" target="_blank">GitHub</a>
-                                <a href="#" target="_blank">논문/보고서</a>
+                            <div class="project-links">
+                                <a href="#" target="_blank">GitHub &rarr;</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
+            <!-- Contact Section -->
             <section id="contact">
-                <h2>CONTACT</h2>
-                <p>새로운 기회에 대해 이야기하는 것을 좋아합니다. 아래 연락처로 편하게 연락 주세요.</p>
+                <h2 class="section-title"><span>C</span>ONTACT</h2>
+                <p>새로운 기술과 흥미로운 프로젝트에 대한 이야기를 기다립니다. 편하게 연락 주세요.</p>
                 <div class="contact-links">
                     <a href="mailto:your-email@example.com">Email</a>
                     <a href="https://github.com/your-github" target="_blank">GitHub</a>
@@ -366,9 +491,11 @@
         </div>
     </main>
 
+    <!-- Footer -->
     <footer>
         <p>&copy; 2025 고아름. All Rights Reserved.</p>
     </footer>
 
 </body>
 </html>
+
