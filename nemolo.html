@@ -5,23 +5,54 @@
 <title>네모네모 로직 (10x10)</title>
 <style>
   body {
+    margin: 0;
     background: black;
     color: white;
     font-family: sans-serif;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 10px 0;
+  }
+  .toolbar {
+    margin: 5px;
+  }
+  button {
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    margin: 0 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #ddd;
+  }
+  .board-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
   }
   table {
     border-collapse: collapse;
-    margin: 20px auto;
   }
   td {
-    width: 30px;
-    height: 30px;
-    border: 1px solid white;
     text-align: center;
     vertical-align: middle;
-    font-weight: bold;
-    font-size: 18px;
+    font-size: 1.2vw;
+    width: 3vw;
+    height: 3vw;
+    border: 1px solid white;
     cursor: pointer;
   }
   .filled {
@@ -32,14 +63,27 @@
     color: red;
   }
   .hint {
-    border: none;
     background: black;
     color: white;
+    border: none;
     cursor: default;
-    font-size: 14px;
+    font-size: 1vw;
   }
-  .toolbar {
-    margin: 15px;
+  /* 바깥 테두리 굵게 */
+  .board td {
+    border: 1px solid white;
+  }
+  .board tr:first-child td {
+    border-top: 3px solid white;
+  }
+  .board tr:last-child td {
+    border-bottom: 3px solid white;
+  }
+  .board td:first-child {
+    border-left: 3px solid white;
+  }
+  .board td:last-child {
+    border-right: 3px solid white;
   }
 </style>
 </head>
@@ -48,15 +92,15 @@
   <div class="toolbar">
     <button onclick="checkAnswer()">정답 확인</button>
     <button onclick="newGame()">새 게임</button>
-    <p id="status">상태: 준비</p>
   </div>
-  <table id="board"></table>
+  <div class="board-wrapper">
+    <table id="board"></table>
+  </div>
 
 <script>
 const size = 10;
 
-// 예시 퍼즐 (정답 그림)
-// 1 = 채움, 0 = 빈칸
+// 예시 정답 2개
 let solutions = [
   [
     [0,0,1,1,1,0,0,0,0,0],
@@ -87,13 +131,76 @@ let solutions = [
 let solution;
 let board = [];
 
+// 힌트 계산
+function computeHints(puzzle) {
+  const rowHints = puzzle.map(row => {
+    let hints = [];
+    let count = 0;
+    row.forEach(cell => {
+      if (cell === 1) count++;
+      else if (count > 0) { hints.push(count); count = 0; }
+    });
+    if (count > 0) hints.push(count);
+    return hints.length ? hints : [0];
+  });
+
+  const colHints = [];
+  for (let c = 0; c < size; c++) {
+    let hints = [];
+    let count = 0;
+    for (let r = 0; r < size; r++) {
+      if (puzzle[r][c] === 1) count++;
+      else if (count > 0) { hints.push(count); count = 0; }
+    }
+    if (count > 0) hints.push(count);
+    colHints.push(hints.length ? hints : [0]);
+  }
+
+  return { rowHints, colHints };
+}
+
 // 보드 생성
 function buildBoard() {
+  const { rowHints, colHints } = computeHints(solution);
   const table = document.getElementById("board");
   table.innerHTML = "";
 
+  // 최대 힌트 길이
+  const maxRowHint = Math.max(...rowHints.map(h => h.length));
+  const maxColHint = Math.max(...colHints.map(h => h.length));
+
+  // 헤더 행들 (열 힌트)
+  for (let i = 0; i < maxColHint; i++) {
+    const tr = document.createElement("tr");
+    for (let j = 0; j < maxRowHint; j++) {
+      const td = document.createElement("td");
+      td.classList.add("hint");
+      tr.appendChild(td);
+    }
+    for (let c = 0; c < size; c++) {
+      const td = document.createElement("td");
+      td.classList.add("hint");
+      const hintLine = colHints[c];
+      const value = hintLine[hintLine.length - maxColHint + i];
+      td.textContent = value || "";
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+
+  // 본게임 행들
   for (let r = 0; r < size; r++) {
     const tr = document.createElement("tr");
+    // 행 힌트
+    for (let j = 0; j < maxRowHint; j++) {
+      const td = document.createElement("td");
+      td.classList.add("hint");
+      const hintLine = rowHints[r];
+      const value = hintLine[hintLine.length - maxRowHint + j];
+      td.textContent = value || "";
+      tr.appendChild(td);
+    }
+    // 셀
     board[r] = [];
     for (let c = 0; c < size; c++) {
       const td = document.createElement("td");
@@ -107,17 +214,14 @@ function buildBoard() {
   }
 }
 
-// 셀 클릭 (빈칸 → 채움 → X → 빈칸)
+// 셀 토글
 function toggleCell(e) {
   const td = e.target;
   const r = td.dataset.row;
   const c = td.dataset.col;
-
   board[r][c] = (board[r][c] + 1) % 3;
-
   td.className = "";
   td.textContent = "";
-
   if (board[r][c] === 1) {
     td.classList.add("filled");
   } else if (board[r][c] === 2) {
@@ -132,19 +236,18 @@ function checkAnswer() {
     for (let c = 0; c < size; c++) {
       if ((solution[r][c] === 1 && board[r][c] !== 1) ||
           (solution[r][c] === 0 && board[r][c] === 1)) {
-        document.getElementById("status").textContent = "상태: 오답 ❌";
+        alert("오답 ❌");
         return;
       }
     }
   }
-  document.getElementById("status").textContent = "상태: 정답 ✅";
+  alert("정답 ✅");
 }
 
 // 새 게임
 function newGame() {
   solution = solutions[Math.floor(Math.random() * solutions.length)];
   buildBoard();
-  document.getElementById("status").textContent = "상태: 새 게임 시작";
 }
 
 newGame();
