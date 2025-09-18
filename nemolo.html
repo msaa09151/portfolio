@@ -16,7 +16,7 @@
     overflow: hidden;
   }
   h1 {
-    font-size: 40px; /* 기존보다 2배 크게 */
+    font-size: 40px;
     margin: 10px 0;
   }
   .board-wrapper {
@@ -48,25 +48,26 @@
   .hint {
     background: black;
     color: white;
-    border: 1px solid white; /* 힌트도 칸으로 */
-    font-size: 1vw;
+    border: none;
     cursor: default;
+    font-size: 1vw;
+    padding: 0 4px;
   }
-  /* 보드 외곽 테두리 */
+  /* 보드 외곽선을 굵게 (힌트와 구분) */
   .board td {
     border: 1px solid white;
   }
   .board tr:first-child td {
-    border-top: 3px solid white;
+    border-top: 6px solid white;
   }
   .board tr:last-child td {
-    border-bottom: 3px solid white;
+    border-bottom: 6px solid white;
   }
   .board td:first-child {
-    border-left: 3px solid white;
+    border-left: 6px solid white;
   }
   .board td:last-child {
-    border-right: 3px solid white;
+    border-right: 6px solid white;
   }
   /* 하단 버튼 */
   .toolbar {
@@ -166,39 +167,28 @@ function buildBoard() {
   const table = document.getElementById("board");
   table.innerHTML = "";
 
-  const maxRowHint = Math.max(...rowHints.map(h => h.length));
-  const maxColHint = Math.max(...colHints.map(h => h.length));
-
-  // 열 힌트
-  for (let i = 0; i < maxColHint; i++) {
-    const tr = document.createElement("tr");
-    for (let j = 0; j < maxRowHint; j++) {
-      const td = document.createElement("td");
-      td.classList.add("hint");
-      tr.appendChild(td);
-    }
-    for (let c = 0; c < size; c++) {
-      const td = document.createElement("td");
-      td.classList.add("hint");
-      const hintLine = colHints[c];
-      const value = hintLine[hintLine.length - maxColHint + i];
-      td.textContent = value || "";
-      tr.appendChild(td);
-    }
-    table.appendChild(tr);
+  // 열 힌트 한 줄
+  const colTr = document.createElement("tr");
+  const emptyTd = document.createElement("td");
+  emptyTd.classList.add("hint");
+  emptyTd.colSpan = 1;
+  colTr.appendChild(emptyTd);
+  for (let c = 0; c < size; c++) {
+    const td = document.createElement("td");
+    td.classList.add("hint");
+    td.textContent = colHints[c].join(" ");
+    colTr.appendChild(td);
   }
+  table.appendChild(colTr);
 
-  // 행 + 셀
+  // 행 힌트 + 보드
   for (let r = 0; r < size; r++) {
     const tr = document.createElement("tr");
-    for (let j = 0; j < maxRowHint; j++) {
-      const td = document.createElement("td");
-      td.classList.add("hint");
-      const hintLine = rowHints[r];
-      const value = hintLine[hintLine.length - maxRowHint + j];
-      td.textContent = value || "";
-      tr.appendChild(td);
-    }
+    const hintTd = document.createElement("td");
+    hintTd.classList.add("hint");
+    hintTd.textContent = rowHints[r].join(" ");
+    tr.appendChild(hintTd);
+
     board[r] = [];
     for (let c = 0; c < size; c++) {
       const td = document.createElement("td");
