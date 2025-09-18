@@ -6,4 +6,4 @@
 - AI, ML, DL
 
 ## 라이브 데모
-- 포트폴리오 사이트: url
+- 포트폴리오 사이트: [url](https://msaa09151.github.io/portfolio/)
