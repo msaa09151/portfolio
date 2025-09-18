@@ -6,4 +6,5 @@
 - AI, ML, DL
 
 ## 라이브 데모
-- 포트폴리오 사이트: [click](https://msaa09151.github.io/portfolio/)
+- 포트폴리오 사이트: https://msaa09151.github.io/portfolio/
+- 10*10 네모로직 사이트: https://msaa09151.github.io/portfolio/nemo.html
