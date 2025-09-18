@@ -37,7 +37,7 @@
     height: 3vw;
     border: 1px solid white;
     cursor: pointer;
-    white-space: nowrap; /* 두 줄 금지 */
+    white-space: nowrap;
   }
   .filled {
     background: white;
@@ -47,7 +47,7 @@
     color: red;
   }
   .hint {
-    background: #ccc; /* 힌트 칸 회색 */
+    background: #eee; /* 힌트 칸을 더 옅은 회색으로 변경 */
     color: black;
     border: 1px solid white;
     cursor: default;
@@ -194,12 +194,12 @@ function buildBoard() {
   // 열 힌트 행
   const colTr = document.createElement("tr");
   const emptyTd = document.createElement("td");
-  emptyTd.classList.add("hint", "separator-col");
+  emptyTd.classList.add("hint", "separator-col", "separator-row");
   colTr.appendChild(emptyTd);
 
   for (let c = 0; c < size; c++) {
     const td = document.createElement("td");
-    td.classList.add("hint");
+    td.classList.add("hint", "separator-row");
     td.textContent = colHints[c].join(" ");
     colTr.appendChild(td);
   }
