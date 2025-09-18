@@ -1,433 +1,268 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>네모네모 로직 (10×10) — Demo</title>
+<meta charset="UTF-8">
+<title>네모네모 로직 (10x10)</title>
 <style>
-  /* 전체 스타일: 배경 검정, 선(및 활성선) 흰색, 모든 선 굵기 동일 */
-  :root{
-    --bg:#000;
-    --line:#fff;
-    --line-alpha:rgba(255,255,255,0.14); /* 비활성 그리드 선(희미하게) */
-    --stroke:4; /* 모든 선 굵기 (px) - 동일하게 유지) */
-    --dot-radius:4;
-    --canvas-pad:18px;
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
   }
-  html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Inter,system-ui,Apple SD Gothic Neo,'Malgun Gothic',sans-serif}
-  .wrap{max-width:980px;margin:24px auto;padding:18px}
-  h1{margin:0 0 12px 0;font-size:20px}
-  p {margin:6px 0;color:rgba(255,255,255,0.8)}
-  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-  button{background:transparent;border:1px solid rgba(255,255,255,0.14);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
-  button.primary{background:var(--line);color:#000;border-color:var(--line)}
-  button.warn{border-color:#ff6b6b}
-  .status{margin-left:12px;font-size:14px;color:var(--line-alpha)}
-  /* 보드 컨테이너 중앙 정렬 */
-  .board-wrap{display:flex;justify-content:center;align-items:center;padding:10px 0}
-  /* SVG는 반응형 */
-  svg{max-width:100%;height:auto;display:block;border-radius:8px}
-  /* 설명 텍스트 */
-  .help{margin-top:10px;color:var(--line-alpha);font-size:13px}
-  /* 모바일용 약간의 여백 */
-  @media (max-width:520px){ .wrap{padding:10px} h1{font-size:18px} }
+  h1 {
+    font-size: 40px;
+    margin: 10px 0;
+  }
+  .board-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  td {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.2vw;
+    width: 3vw;
+    height: 3vw;
+    border: 1px solid white;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filled {
+    background: white;
+    color: black;
+  }
+  .cross {
+    color: red;
+  }
+  .hint {
+    background: #eee; /* 힌트 칸을 더 옅은 회색으로 변경 */
+    color: black;
+    border: 1px solid white;
+    cursor: default;
+    font-size: 1vw;
+    font-weight: bold;
+  }
+  /* 힌트와 보드 사이 구분선 */
+  .separator-col {
+    border-right: 4px solid white !important;
+  }
+  .separator-row td {
+    border-bottom: 4px solid white !important;
+  }
+  /* 보드 안 일반 선 */
+  .board td {
+    border: 1px solid white;
+  }
+  /* 최외곽은 일반 굵기 */
+  .board tr:first-child td {
+    border-top: 1px solid white;
+  }
+  .board tr:last-child td {
+    border-bottom: 1px solid white;
+  }
+  .board td:first-child {
+    border-left: 1px solid white;
+  }
+  .board td:last-child {
+    border-right: 1px solid white;
+  }
+  /* 하단 버튼 */
+  .toolbar {
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+  }
+  button {
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 18px;
+    margin: 0 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover {
+    background: #ddd;
+  }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>네모네모 로직 (10 × 10)</h1>
-    <p>클릭 또는 드래그로 선을 그려서 하나의 닫힌 루프(분기/끊김 없음)를 만드세요. <strong>모든 선 굵기는 동일</strong>합니다.</p>
-
-    <div class="toolbar">
-      <button id="checkBtn" class="primary">정답 확인</button>
-      <button id="newBtn">새 게임</button>
-      <button id="clearBtn">지우기</button>
-      <div class="status" id="status">상태: 준비</div>
-    </div>
-
-    <div class="board-wrap">
-      <!-- SVG 보드: 점은 (N+1)x(N+1), 셀은 N x N -->
-      <svg id="board" viewBox="0 0 520 520" width="520" height="520" aria-label="네모네모 보드" role="img"></svg>
-    </div>
-
-    <div class="help">
-      <div>- 클릭: 개별 엣지 토글</div>
-      <div>- 클릭 후 드래그: 여러 엣지를 연속으로 그리거나 지울 수 있음</div>
-      <div>- 정답 확인: 현재 그린 선이 <strong>단일 폐루프(모두 연결된 하나의 사이클)</strong>인지 검사</div>
-      <div>- 새 게임: 간단한 랜덤 루프(사각형 등)를 정답으로 설정하고 보드 초기화</div>
-    </div>
+  <h1>네모네모 로직 (10×10)</h1>
+  <div class="board-wrapper">
+    <table id="board" class="board"></table>
+  </div>
+  <div class="toolbar">
+    <button onclick="checkAnswer()">정답 확인</button>
+    <button onclick="newGame()">새 게임</button>
   </div>
 
 <script>
-/*
-  네모네모 로직 (10x10) — 간단 구현
-  - 격자: N x N 셀 (N=10)
-  - 점(정점)은 (N+1)x(N+1)
-  - 엣지(edge)는 점들 사이의 수평(h) 또는 수직(v) 간선
-  - 사용자는 엣지를 클릭/드래그하여 활성화(선) 또는 비활성화(없음) 가능
-  - "정답 확인" : 활성 엣지가 하나의 폐루프(single cycle)인지 검사
-  - "새 게임" : 간단한 랜덤 루프를 생성(정답으로 설정)하고 보드를 초기화
-*/
+const size = 10;
 
-// 설정
-const N = 10;                     // 셀 수
-const SIZE = 520;                 // SVG viewBox 정사이즈
-const PAD = 28;                   // 내부 패딩
-const strokeW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--stroke')) || 4;
-const dotRadius = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dot-radius')) || 4;
+// 여러 개의 퍼즐 데이터
+let solutions = [
+  // 웃는 얼굴
+  [
+    [0,1,1,0,0,0,0,1,1,0],
+    [0,1,1,0,0,0,0,1,1,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0,1],
+    [0,1,0,0,0,0,0,0,1,0],
+    [0,0,1,0,0,0,0,1,0,0],
+    [0,0,0,1,1,1,1,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+  ],
+  // 하트
+  [
+    [0,1,1,0,0,0,1,1,0,0],
+    [1,1,1,1,0,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1,1,0],
+    [0,1,1,1,1,1,1,1,0,0],
+    [0,0,1,1,1,1,1,0,0,0],
+    [0,0,0,1,1,1,0,0,0,0],
+    [0,0,0,0,1,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0],
+  ],
+  // 체크무늬
+  [
+    [1,0,1,0,1,0,1,0,1,0],
+    [0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0],
+    [0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0],
+    [0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0],
+    [0,1,0,1,0,1,0,1,0,1],
+    [1,0,1,0,1,0,1,0,1,0],
+    [0,1,0,1,0,1,0,1,0,1],
+  ]
+];
 
-const svg = document.getElementById('board');
-const statusEl = document.getElementById('status');
-const checkBtn = document.getElementById('checkBtn');
-const newBtn = document.getElementById('newBtn');
-const clearBtn = document.getElementById('clearBtn');
+let solution;
+let board = [];
 
-const gridW = SIZE - PAD*2;
-const cell = gridW / N; // 한 셀 크기
+// 힌트 계산
+function computeHints(puzzle) {
+  const rowHints = puzzle.map(row => {
+    let hints = [], count = 0;
+    row.forEach(cell => {
+      if (cell === 1) count++;
+      else if (count > 0) { hints.push(count); count = 0; }
+    });
+    if (count > 0) hints.push(count);
+    return hints.length ? hints : [0];
+  });
 
-// 내부 데이터 구조
-// edges: 키 -> SVG element, state.active -> boolean
-// key format: 'h_r_c' (horizontal edge at row r, col c) between dot (r,c) and (r,c+1)
-//             'v_r_c' (vertical edge at row r, col c) between dot (r,c) and (r+1,c)
-const edges = {}; // map key -> {el, active}
-
-// 정답(솔루션)도 같은 키의 집합으로 저장 (새 게임 생성시 변경)
-let solutionSet = new Set();
-
-// 드래그 그리기 상태
-let isMouseDown = false;
-let drawMode = null; // 'on' or 'off' or null
-let lastToggled = null; // 같은 엣지 여러번 토글 방지
-
-// SVG namespace
-const SVG_NS = "http://www.w3.org/2000/svg";
-
-// 초기화: SVG 요소 생성
-function buildBoard(){
-  while(svg.firstChild) svg.removeChild(svg.firstChild);
-
-  // 배경 rect (검정 유지)
-  const bg = document.createElementNS(SVG_NS,'rect');
-  bg.setAttribute('x',0);
-  bg.setAttribute('y',0);
-  bg.setAttribute('width',SIZE);
-  bg.setAttribute('height',SIZE);
-  bg.setAttribute('fill','black');
-  svg.appendChild(bg);
-
-  // 그룹: 그리드(비활성 선, 희미)
-  const gridGroup = document.createElementNS(SVG_NS,'g');
-  gridGroup.setAttribute('stroke','rgba(255,255,255,0.14)');
-  gridGroup.setAttribute('stroke-width', strokeW);
-  gridGroup.setAttribute('stroke-linecap','round');
-  gridGroup.setAttribute('fill','none');
-  svg.appendChild(gridGroup);
-
-  // 점 좌표 배열
-  function dotX(col){ return PAD + col * cell; }
-  function dotY(row){ return PAD + row * cell; }
-
-  // 비활성 그리드 선(전체)
-  // 수평선
-  for(let r=0;r<=N;r++){
-    for(let c=0;c<N;c++){
-      const x1 = dotX(c), y1=dotY(r);
-      const x2 = dotX(c+1), y2=dotY(r);
-      const line = document.createElementNS(SVG_NS,'line');
-      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
-      gridGroup.appendChild(line);
+  const colHints = [];
+  for (let c = 0; c < size; c++) {
+    let hints = [], count = 0;
+    for (let r = 0; r < size; r++) {
+      if (puzzle[r][c] === 1) count++;
+      else if (count > 0) { hints.push(count); count = 0; }
     }
-  }
-  // 수직선
-  for(let c=0;c<=N;c++){
-    for(let r=0;r<N;r++){
-      const x1 = dotX(c), y1=dotY(r);
-      const x2 = dotX(c), y2=dotY(r+1);
-      const line = document.createElementNS(SVG_NS,'line');
-      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
-      gridGroup.appendChild(line);
-    }
+    if (count > 0) hints.push(count);
+    colHints.push(hints.length ? hints : [0]);
   }
 
-  // 엣지(인터랙티브): 투명 / inactive로 시작. 활성화되면 흰색으로 보임.
-  const interactiveGroup = document.createElementNS(SVG_NS,'g');
-  interactiveGroup.setAttribute('stroke','#fff');
-  interactiveGroup.setAttribute('stroke-width', strokeW);
-  interactiveGroup.setAttribute('stroke-linecap','round');
-  interactiveGroup.setAttribute('fill','none');
-  svg.appendChild(interactiveGroup);
-
-  // 수평 엣지 생성
-  for(let r=0;r<=N;r++){
-    for(let c=0;c<N;c++){
-      const key = `h_${r}_${c}`;
-      const x1 = dotX(c), y1 = dotY(r);
-      const x2 = dotX(c+1), y2 = dotY(r);
-      const line = document.createElementNS(SVG_NS,'line');
-      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
-      line.setAttribute('stroke-opacity', 0); // 초기엔 투명(그리드는 아래에 있음)
-      line.dataset.key = key;
-      line.classList.add('edge');
-      interactiveGroup.appendChild(line);
-      edges[key] = {el: line, active: false};
-    }
-  }
-  // 수직 엣지 생성
-  for(let r=0;r<N;r++){
-    for(let c=0;c<=N;c++){
-      const key = `v_${r}_${c}`;
-      const x1 = dotX(c), y1 = dotY(r);
-      const x2 = dotX(c), y2 = dotY(r+1);
-      const line = document.createElementNS(SVG_NS,'line');
-      line.setAttribute('x1',x1); line.setAttribute('y1',y1);
-      line.setAttribute('x2',x2); line.setAttribute('y2',y2);
-      line.setAttribute('stroke-opacity', 0);
-      line.dataset.key = key;
-      line.classList.add('edge');
-      interactiveGroup.appendChild(line);
-      edges[key] = {el: line, active: false};
-    }
-  }
-
-  // 점(시각적): 작은 원
-  const dotsGroup = document.createElementNS(SVG_NS,'g');
-  dotsGroup.setAttribute('fill','#fff');
-  svg.appendChild(dotsGroup);
-  for(let r=0;r<=N;r++){
-    for(let c=0;c<=N;c++){
-      const cx = dotX(c), cy = dotY(r);
-      const dot = document.createElementNS(SVG_NS,'circle');
-      dot.setAttribute('cx', cx);
-      dot.setAttribute('cy', cy);
-      dot.setAttribute('r', dotRadius);
-      dotsGroup.appendChild(dot);
-    }
-  }
-
-  attachEvents();
+  return { rowHints, colHints };
 }
 
-// 엣지 토글(활성/비활성)
-function setEdgeActive(key, on, suppressRender=false){
-  const obj = edges[key];
-  if(!obj) return;
-  obj.active = !!on;
-  if(!suppressRender){
-    obj.el.setAttribute('stroke-opacity', obj.active ? 1 : 0);
+// 보드 생성
+function buildBoard() {
+  const { rowHints, colHints } = computeHints(solution);
+  const table = document.getElementById("board");
+  table.innerHTML = "";
+
+  // 열 힌트 행
+  const colTr = document.createElement("tr");
+  const emptyTd = document.createElement("td");
+  emptyTd.classList.add("hint", "separator-col", "separator-row");
+  colTr.appendChild(emptyTd);
+
+  for (let c = 0; c < size; c++) {
+    const td = document.createElement("td");
+    td.classList.add("hint", "separator-row");
+    td.textContent = colHints[c].join(" ");
+    colTr.appendChild(td);
+  }
+  table.appendChild(colTr);
+
+  // 행 힌트 + 보드
+  for (let r = 0; r < size; r++) {
+    const tr = document.createElement("tr");
+    const hintTd = document.createElement("td");
+    hintTd.classList.add("hint", "separator-col");
+    hintTd.textContent = rowHints[r].join(" ");
+    tr.appendChild(hintTd);
+
+    board[r] = [];
+    for (let c = 0; c < size; c++) {
+      const td = document.createElement("td");
+      td.dataset.row = r;
+      td.dataset.col = c;
+      td.addEventListener("click", toggleCell);
+      board[r][c] = 0;
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
   }
 }
 
-// 전체 렌더(모든 엣지)
-function renderAll(){
-  for(const k in edges){
-    edges[k].el.setAttribute('stroke-opacity', edges[k].active ? 1 : 0);
+// 셀 토글
+function toggleCell(e) {
+  const td = e.target;
+  const r = td.dataset.row;
+  const c = td.dataset.col;
+  board[r][c] = (board[r][c] + 1) % 3;
+  td.className = "";
+  td.textContent = "";
+  if (board[r][c] === 1) {
+    td.classList.add("filled");
+  } else if (board[r][c] === 2) {
+    td.classList.add("cross");
+    td.textContent = "X";
   }
 }
 
-// 엣지 클릭/드래그 이벤트 연결
-function attachEvents(){
-  // 마우스 핸들(터치 포함)
-  function onPointerStart(e){
-    isMouseDown = true;
-    lastToggled = null;
-    e.preventDefault();
-    const key = findEdgeKeyFromEvent(e);
-    if(!key) return;
-    // 토글 모드 판정: 현재 상태 반전
-    const current = edges[key].active;
-    drawMode = current ? 'off' : 'on';
-    toggleEdgeByKey(key, drawMode);
-  }
-  function onPointerMove(e){
-    if(!isMouseDown) return;
-    const key = findEdgeKeyFromEvent(e);
-    if(!key) return;
-    toggleEdgeByKey(key, drawMode);
-  }
-  function onPointerEnd(e){
-    isMouseDown = false;
-    drawMode = null;
-    lastToggled = null;
-  }
-
-  // 이벤트 등록 (pointer API)
-  svg.addEventListener('pointerdown', onPointerStart);
-  svg.addEventListener('pointermove', onPointerMove);
-  window.addEventListener('pointerup', onPointerEnd);
-  // 터치 시 selection 방지
-  svg.style.touchAction = 'none';
-}
-
-// 이벤트에서 가장 가까운 엣지 키를 계산
-function findEdgeKeyFromEvent(evt){
-  // clientX/Y -> SVG coordinate
-  const pt = svg.createSVGPoint();
-  pt.x = evt.clientX; pt.y = evt.clientY;
-  const ctm = svg.getScreenCTM().inverse();
-  const loc = pt.matrixTransform(ctm);
-  // 각 엣지의 중심점과의 거리 계산해서 가까운 엣지(임계값)
-  let best = null, bestDist = 99999;
-  const threshold = Math.max(cell*0.38, 22); // 터치 친화적 범위
-  for(const k in edges){
-    const el = edges[k].el;
-    const x1 = parseFloat(el.getAttribute('x1')), y1 = parseFloat(el.getAttribute('y1'));
-    const x2 = parseFloat(el.getAttribute('x2')), y2 = parseFloat(el.getAttribute('y2'));
-    // 중점
-    const mx = (x1+x2)/2, my = (y1+y2)/2;
-    // 거리 (유클리드)
-    const dx = loc.x - mx, dy = loc.y - my;
-    const d = Math.hypot(dx,dy);
-    if(d < bestDist){
-      bestDist = d; best = k;
+// 정답 확인
+function checkAnswer() {
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if ((solution[r][c] === 1 && board[r][c] !== 1) ||
+          (solution[r][c] === 0 && board[r][c] === 1)) {
+        alert("오답 ❌");
+        return;
+      }
     }
   }
-  if(bestDist <= threshold) return best;
-  return null;
+  alert("정답 ✅");
 }
 
-function toggleEdgeByKey(key, mode){
-  if(!edges[key]) return;
-  if(lastToggled === key) return; // 연속 토글 방지
-  lastToggled = key;
-  if(mode === 'on') setEdgeActive(key, true);
-  else if(mode === 'off') setEdgeActive(key, false);
-  else setEdgeActive(key, !edges[key].active);
+// 새 게임
+function newGame() {
+  solution = solutions[Math.floor(Math.random() * solutions.length)];
+  buildBoard();
 }
 
-// 그래프 검사: 활성 엣지들이 하나의 폐루프(single cycle)인지 확인
-function checkSingleCycle(){
-  // Build adjacency for nodes (dots). Node index = r*(N+1)+c
-  const nodeCount = (N+1)*(N+1);
-  const adj = Array.from({length: nodeCount}, ()=>[]);
-  let totalEdges = 0;
-
-  for(const key in edges){
-    if(!edges[key].active) continue;
-    // parse key
-    const parts = key.split('_');
-    if(parts[0]==='h'){
-      const r = parseInt(parts[1]), c = parseInt(parts[2]);
-      const a = r*(N+1)+c;
-      const b = r*(N+1)+(c+1);
-      adj[a].push(b); adj[b].push(a);
-      totalEdges++;
-    } else if(parts[0]==='v'){
-      const r = parseInt(parts[1]), c = parseInt(parts[2]);
-      const a = r*(N+1)+c;
-      const b = (r+1)*(N+1)+c;
-      adj[a].push(b); adj[b].push(a);
-      totalEdges++;
-    }
-  }
-
-  if(totalEdges === 0) return {ok:false, reason:'선이 하나도 없음'};
-
-  // 각 정점의 차수는 0 또는 2 이어야 함. (분기(>=3) 또는 끝점(1) => 실패)
-  for(let i=0;i<nodeCount;i++){
-    const d = adj[i].length;
-    if(d !== 0 && d !== 2){
-      return {ok:false, reason:`정점에 분기 혹은 끝점 발생 (degree=${d})`};
-    }
-  }
-
-  // 연결성 검사: 활성 엣지가 있는 정점들만 고려해서 하나의 연결 요소인지 확인
-  let start = -1;
-  for(let i=0;i<nodeCount;i++) if(adj[i].length>0){ start = i; break; }
-  if(start === -1) return {ok:false, reason:'선이 없음'};
-
-  // DFS
-  const visited = new Set();
-  const stack = [start];
-  while(stack.length){
-    const u = stack.pop();
-    if(visited.has(u)) continue;
-    visited.add(u);
-    for(const v of adj[u]) if(!visited.has(v)) stack.push(v);
-  }
-
-  // 활성 엣지에 연결된 정점 수
-  let nodesInEdges = 0;
-  for(let i=0;i<nodeCount;i++) if(adj[i].length>0) nodesInEdges++;
-
-  // For a single simple cycle, number of edges == number of nodes in component
-  if(totalEdges !== nodesInEdges){
-    return {ok:false, reason:'루프 수 또는 연결성 불일치 (edges != nodes) — 분리된 루프거나 교차가 있음'};
-  }
-
-  // Check visited includes all nodesInEdges
-  if(visited.size !== nodesInEdges){
-    return {ok:false, reason:'활성 엣지들이 하나로 연결되어 있지 않음'};
-  }
-
-  // 최종: 모든 조건 만족
-  return {ok:true};
-}
-
-// '정답 확인' 버튼 동작
-checkBtn.addEventListener('click', ()=>{
-  const res = checkSingleCycle();
-  if(res.ok){
-    statusEl.textContent = '상태: 정답(단일 폐루프)입니다 🎉';
-  } else {
-    statusEl.textContent = '상태: 틀림 — ' + res.reason;
-  }
-});
-
-// '지우기' 버튼
-clearBtn.addEventListener('click', ()=>{
-  for(const k in edges) setEdgeActive(k,false);
-  renderAll();
-  statusEl.textContent = '상태: 보드 초기화됨';
-});
-
-// '새 게임' 버튼: 간단한 랜덤 루프 생성(정답) 및 보드 초기화
-newBtn.addEventListener('click', ()=>{
-  makeRandomSimpleLoop();
-  for(const k in edges) setEdgeActive(k,false);
-  renderAll();
-  statusEl.textContent = '상태: 새 게임 (정답은 내부에 설정됨) — 지금은 보이지 않습니다.';
-});
-
-// 랜덤 단순 루프 생성 함수 (사각형 형태가 주로 생성됨) — solutionSet에 키를 넣음
-function makeRandomSimpleLoop(){
-  solutionSet.clear();
-  // 아주 간단한 전략: 랜덤한 내측 사각형의 둘레를 루프로 삼음.
-  // 선택: top row r1 in [0..N-1], left col c1 in [0..N-1], bottom r2>r1, right c2>c1
-  const r1 = randInt(0, Math.max(0,N-3));
-  const c1 = randInt(0, Math.max(0,N-3));
-  const r2 = randInt(r1+1, Math.min(N-1,N-1));
-  const c2 = randInt(c1+1, Math.min(N-1,N-1));
-  // 사각형 둘레: horizontal top h_r1_c (c1..c2-가 아닌? 주의)
-  // Our horizontal edges keys h_r_c correspond to top edge of row r cell from col c to c+1
-  for(let c=c1;c<=c2-1;c++){
-    solutionSet.add(`h_${r1}_${c}`); // top
-    solutionSet.add(`h_${r2+1}_${c}`); // bottom (r2's bottom is at r2+1)
-  }
-  for(let r=r1;r<=r2;r++){
-    solutionSet.add(`v_${r}_${c1}`); // left
-    solutionSet.add(`v_${r}_${c2+1}`); // right
-  }
-  // solutionSet now holds keys forming a rectangle loop
-  // (참고: 일부 랜덤 조합이 너무 작게 나오거나 테두리에 겹칠 수 있으나 단일 루프로 유지됩니다)
-  console.log('Solution loop keys (internal):', Array.from(solutionSet).slice(0,40));
-}
-
-// 작은 유틸: 랜덤 정수 inclusive
-function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-// (선택) 디버그용: 정답 보이기 - 엣지를 solutionSet에 표시 (white full). 
-// 현재는 새 게임이 내부적으로 solutionSet을 만들지만 사용자에게 바로 표시하지 않음.
-// 아래 주석을 해제하면 '새 게임'을 눌렀을 때 정답을 화면에 표시합니다.
-// function revealSolution(){ for(const k of solutionSet) setEdgeActive(k,true); renderAll(); }
-
-// 초기 빌드 및 새 게임 한 번 생성
-buildBoard();
-makeRandomSimpleLoop();
-statusEl.textContent = '상태: 준비 — 새 게임을 시작하려면 "새 게임"을 누르세요.';
-
+newGame();
 </script>
 </body>
 </html>
